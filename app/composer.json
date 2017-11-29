@@ -1,0 +1,14 @@
+{
+    "name": "AWS-PHP-example",
+    "description": "example using AWS sdk for php",
+    "type": "project",
+    "require": {
+        "aws/aws-sdk-php-resources": "^0.3.0"
+    },
+    "authors": [
+        {
+            "name": "Oscar Sanchez",
+            "email": "oscar.sanchez@orbis.com.pe"
+        }
+    ]
+}
