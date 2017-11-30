@@ -2,20 +2,44 @@
 require 'vendor/autoload.php';
 use Aws\Sdk;
 
-$credentials = new Aws\Credentials\Credentials('AKIAIVFQMFY4Z3HI2XRA', 'fCY060Q75oZqwYnny7DVP5q+fMt7rHHuhf2SggLN');
+try {
+    $aws = parse_ini_file('aws.ini');
+    $key = $aws['aws_access_key_id'];
+    $secret = $aws['aws_secret_access_key'];
+    $credentials = new Aws\Credentials\Credentials($key, $secret);
 
-$config = [
-    'version'       => 'latest',
-    'region'        =>  'us-east-2',
-    'credentials'   =>  $credentials
-];
-$sdk = new Sdk($config);
-$client = $sdk->createCloudWatchLogs();
-echo '<hr><pre>';
-echo 'File :: ' . __FILE__ . ' (Line ' . __LINE__ . ')' . PHP_EOL;
-var_dump($client->createLogGroup([
+    $config = [
+        'version' => 'latest',
+        'region' => 'us-east-2',
+        'credentials' => $credentials
+    ];
+    $sdk = new Sdk($config);
+    $client = $sdk->createCloudWatchLogs();
+    $client->createLogGroup([
+        'logGroupName' => 'test_1', // REQUIRED
+        'tags' => ['test' => '1'],
+    ]);
+
+    $client->createLogStream([
+        'logGroupName' => 'test_1', // REQUIRED
+        'logStreamName' => 'test_1a', // REQUIRED
+    ]);
+
+    $response = $client->putLogEvents([
+        'logEvents' => [ // REQUIRED
+                [
+                    'message' => 'first log', // REQUIRED
+                    'timestamp' => round(microtime(true) * 1000), // REQUIRED
+        ],
+        // ...
+    ],
     'logGroupName' => 'test_1', // REQUIRED
-    'tags' => ['test' => '1'],
-]));
-echo '</pre><hr>';
-exit();
+    'logStreamName' => 'test_1a', // REQUIRED
+]);
+    var_dump($response);
+} catch (Aws\CloudWatchLogs\Exception\CloudWatchLogsException $e){
+    switch ($e->getAwsErrorCode()){
+        case 'ResourceAlreadyExistsException':
+            var_dump($e->getAwsErrorMessage());
+    }
+}
