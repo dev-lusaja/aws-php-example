@@ -1,17 +1,12 @@
 <?php
-require 'vendor/autoload.php';
+require '/app/vendor/autoload.php';
 use Aws\Sdk;
 
 try {
-    $aws = parse_ini_file('aws.ini');
-    $key = $aws['aws_access_key_id'];
-    $secret = $aws['aws_secret_access_key'];
-    $credentials = new Aws\Credentials\Credentials($key, $secret);
-
     $config = [
+        'profile' => 'default',
         'version' => 'latest',
-        'region' => 'us-east-2',
-        'credentials' => $credentials
+        'region' => 'us-east-2'
     ];
     $sdk = new Sdk($config);
     $client = $sdk->createCloudWatchLogs();
@@ -41,5 +36,14 @@ try {
     switch ($e->getAwsErrorCode()){
         case 'ResourceAlreadyExistsException':
             var_dump($e->getAwsErrorMessage());
+            break;
+        case 'InvalidSignatureException':
+            var_dump($e->getAwsErrorMessage());
+            break;
+        default:
+            var_dump($e->getAwsErrorCode());
+            break;
     }
+} catch (Exception $e){
+    var_dump($e->getMessage());
 }
