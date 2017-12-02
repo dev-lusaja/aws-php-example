@@ -9,5 +9,11 @@ build: ## Build the docker image
 php: ## execute the code
 	@docker run -ti --rm -v $(PWD)/app:/app -v ~/.aws/:/root/.aws/ $(IMAGE_NAME) php ${FILE}
 
+composer: ## execute the code
+	@docker run -ti --rm -v $(PWD)/app:/app $(IMAGE_NAME) composer update
+
+autoload: ## execute the code
+	@docker run -ti --rm -v $(PWD)/app:/app $(IMAGE_NAME) composer dump-autoload
+
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'

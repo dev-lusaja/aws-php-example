@@ -1,5 +1,5 @@
 <?php
-require '/app/vendor/autoload.php';
+//require '/app/vendor/autoload.php';
 use Aws\Sdk;
 
 try {
