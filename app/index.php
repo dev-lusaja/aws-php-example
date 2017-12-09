@@ -13,3 +13,4 @@ $sdk = new Sdk($config);
 
 $cloudWatchLogs = CloudWatchLogExample::getInstance($sdk);
 var_dump($cloudWatchLogs->putLogs("first log"));
+var_dump($cloudWatchLogs->putLogs("second log"));

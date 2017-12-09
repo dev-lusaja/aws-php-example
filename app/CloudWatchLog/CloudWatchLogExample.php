@@ -9,32 +9,32 @@ class CloudWatchLogExample
     /**
      * @var \Aws\CloudWatchLogs\CloudWatchLogsClient|null
      */
-    private $client = null;
+    protected $client = null;
 
     /**
      * @var null
      */
-    private $nextSequenceToken = null;
+    protected $nextSequenceToken = null;
 
     /**
      * @var string
      */
-    private $logGroupName = 'logGroup_example';
+    protected $logGroupName = 'logGroup_example';
 
     /**
      * @var array
      */
-    private $tags = ['example' => 'logGroup'];
+    protected $tags = ['example' => 'logGroup'];
 
     /**
      * @var string
      */
-    private $logStream = '' ;
+    protected $logStream = '' ;
 
     /**
      * @var null
      */
-    private static $instance = null;
+    protected static $instance = null;
 
     /**
      * @param Sdk $sdk
@@ -51,21 +51,12 @@ class CloudWatchLogExample
      * CloudWatchLogExample constructor.
      * @param Sdk $sdk
      */
-    public function __construct(Sdk $sdk)
+    protected function __construct(Sdk $sdk)
     {
         try {
             $this->client = $sdk->createCloudWatchLogs();
-            $this->client->createLogGroup([
-                'logGroupName' => $this->logGroupName,
-                'tags' => $this->tags,
-            ]);
-
-            $this->logStream = date("Y/m/d/") . '[$LATEST]' . md5(date("H:i:s:u"));
-
-            $this->client->createLogStream([
-                'logGroupName' => $this->logGroupName,
-                'logStreamName' => $this->logStream,
-            ]);
+            $this->createLogGroup();
+            $this->createLogStream();
         } catch (\Exception $e){
             var_dump($e->getMessage());
         }
@@ -89,14 +80,34 @@ class CloudWatchLogExample
             ];
 
             if ($this->nextSequenceToken){
-                array_push($config, ['sequenceToken' => $this->nextSequenceToken]);
+                $config['sequenceToken'] = $this->nextSequenceToken;
             }
-
-            $response = $this->client->putLogEvents($config);
-            $this->nextSequenceToken = $response->get('nextSequenceToken');
-            return $response;
+            var_dump($config);
+            $result = $this->client->putLogEvents($config);
+            $this->nextSequenceToken = $result->get('nextSequenceToken');
+            return $result;
         } catch (\Exception $e){
             var_dump($e->getMessage());
         }
+    }
+
+    protected function createLogGroup(){
+        if (!apcu_exists('LogGroupCreated')){
+            $result = $this->client->createLogGroup([
+                'logGroupName' => $this->logGroupName,
+                'tags' => $this->tags,
+            ]);
+            if ($result->get('statusCode') == '200'){
+                apcu_add('LogGroupCreated', true);
+            }
+        }
+    }
+
+    protected function createLogStream(){
+        $this->logStream = date("Y/m/d/") . '[$LATEST]' . md5(date("H:i:s:u"));
+        $this->client->createLogStream([
+            'logGroupName' => $this->logGroupName,
+            'logStreamName' => $this->logStream,
+        ]);
     }
 }
